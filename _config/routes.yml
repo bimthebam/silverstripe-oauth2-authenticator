@@ -1,0 +1,7 @@
+---
+Name: silverstripe_oauth2_authenticator_routes
+---
+
+SilverStripe\Control\Director:
+  rules:
+    oauth2: BimTheBam\OAuth2Authenticator\Control\OAuth2

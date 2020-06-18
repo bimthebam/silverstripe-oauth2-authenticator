@@ -13,7 +13,8 @@
     "require": {
         "composer/installers": "*",
         "silverstripe/framework": "~4.0",
-        "silverstripe/siteconfig": "~4.0"
+        "silverstripe/siteconfig": "~4.0",
+        "guzzlehttp/guzzle": "~6.0"
     },
     "autoload": {
         "psr-4": {
