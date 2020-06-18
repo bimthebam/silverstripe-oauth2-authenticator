@@ -78,7 +78,8 @@ class Provider extends DataObject
                         'ClientID',
                         LiteralField::create(
                             'ClientSecretDescription',
-                            _t(__CLASS__ . '.CLIENT_SECRET_DESCRIPTION',
+                            _t(
+                                __CLASS__ . '.CLIENT_SECRET_DESCRIPTION',
                                 '<p class="alert alert-info">' .
                                 'The client secrect must be stored secretly. ' .
                                 'Please add it to your .env file:' .
@@ -100,7 +101,8 @@ class Provider extends DataObject
                         'ClientID',
                         LiteralField::create(
                             'ClientSecretDescriptionDefined',
-                            _t(__CLASS__ . '.CLIENT_SECRET_DESCRIPTION_DEFINED',
+                            _t(
+                                __CLASS__ . '.CLIENT_SECRET_DESCRIPTION_DEFINED',
                                 '<p class="alert alert-info">' .
                                 'Client secret is properly defined in your .env file.' .
                                 '</p>'

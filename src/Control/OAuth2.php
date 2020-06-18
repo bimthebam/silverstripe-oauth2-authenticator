@@ -45,7 +45,8 @@ class OAuth2 extends Controller
      * @param HTTPRequest $request
      * @return \SilverStripe\Control\HTTPResponse|null
      */
-    public function index(HTTPRequest $request) {
+    public function index(HTTPRequest $request)
+    {
         return $this->redirect(Director::absoluteBaseURL());
     }
 
