@@ -2,4 +2,9 @@
 
 ## ToDo
 
-- [ ] Nearly everything 😅
+- [x] Auth flow
+- [ ] LoginForm implementation
+- [ ] BackURL handling
+- [ ] Group mapping
+- [ ] Documentation
+- [ ] Examples (e.g. Azure AD, Google)

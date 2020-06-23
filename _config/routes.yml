@@ -5,3 +5,10 @@ Name: silverstripe_oauth2_authenticator_routes
 SilverStripe\Control\Director:
   rules:
     oauth2: BimTheBam\OAuth2Authenticator\Control\OAuth2
+
+---
+Only:
+  environment: dev
+---
+BimTheBam\OAuth2Authenticator\Control\OAuth2:
+  state_ttl: 3600
