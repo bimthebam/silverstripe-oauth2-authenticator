@@ -234,19 +234,27 @@ class OAuth2 extends Controller
         ) {
             $this->httpError(500, 'Email not found at path: ' . $provider->UserInfoEmailPath);
         }
+        
+        $firstName = null;
 
-        if (
-            !count($firstName = $body->find($provider->UserInfoFirstNamePath))
-            || ($firstName = $firstName->first()) === null
-        ) {
-            $this->httpError(500, 'First name not found at path: ' . $provider->UserInfoFirstNamePath);
+        if (!empty($provider->UserInfoFirstNamePath)) {
+            if (
+                !count($firstName = $body->find($provider->UserInfoFirstNamePath))
+                || ($firstName = $firstName->first()) === null
+            ) {
+                $this->httpError(500, 'First name not found at path: ' . $provider->UserInfoFirstNamePath);
+            }
         }
 
-        if (
-            !count($surname = $body->find($provider->UserInfoSurnamePath))
-            || ($surname = $surname->first()) === null
-        ) {
-            $this->httpError(500, 'Surname not found at path: ' . $provider->UserInfoSurnamePath);
+        $surname = null;
+
+        if (!empty($provider->UserInfoSurnamePath)) {
+            if (
+                !count($surname = $body->find($provider->UserInfoSurnamePath))
+                || ($surname = $surname->first()) === null
+            ) {
+                $this->httpError(500, 'Surname not found at path: ' . $provider->UserInfoSurnamePath);
+            }
         }
 
         if ($state->test) {
