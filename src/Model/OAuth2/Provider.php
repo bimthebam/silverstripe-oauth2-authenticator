@@ -5,6 +5,9 @@ namespace BimTheBam\OAuth2Authenticator\Model\OAuth2;
 use BimTheBam\OAuth2Authenticator\Control\OAuth2;
 use SilverStripe\Core\Environment;
 use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\GridField\GridField;
+use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
+use SilverStripe\Forms\GridField\GridFieldDeleteAction;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\Forms\TextareaField;
@@ -13,7 +16,9 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBBoolean;
 use SilverStripe\ORM\FieldType\DBText;
 use SilverStripe\ORM\FieldType\DBVarchar;
+use SilverStripe\ORM\ManyManyList;
 use SilverStripe\Security\Group;
+use SilverStripe\Security\Member;
 
 /**
  * Class Provider
@@ -30,6 +35,7 @@ use SilverStripe\Security\Group;
  * @property string Scopes
  * @property int NewMembersDefaultGroupID
  * @method Group NewMembersDefaultGroup()
+ * @method ManyManyList|Member[] Members()
  * @property string ClientSecretEnvKey
  * @property string ClientSecret
  */
@@ -71,6 +77,13 @@ class Provider extends DataObject
      */
     private static $has_one = [
         'NewMembersDefaultGroup' => Group::class,
+    ];
+
+    /**
+     * @var string[]
+     */
+    private static $many_many = [
+        'Members' => Member::class,
     ];
 
     /**
@@ -206,6 +219,13 @@ class Provider extends DataObject
                         '</p>'
                     )
                 );
+
+                if (($members = $fields->dataFieldByName('Members')) && ($members instanceof GridField)) {
+                    $config = GridFieldConfig_RecordViewer::create()
+                        ->addComponent(new GridFieldDeleteAction(true));
+
+                    $members->setConfig($config);
+                }
             }
         });
 
@@ -238,6 +258,7 @@ class Provider extends DataObject
             __CLASS__ . '.NEW_MEMBERS_DEFAULT_GROUP',
             'Add new members to'
         );
+        $labels['Members'] = Member::singleton()->i18n_plural_name();
         return $labels;
     }
 

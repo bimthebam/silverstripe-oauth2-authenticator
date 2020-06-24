@@ -272,7 +272,7 @@ class OAuth2 extends Controller
             ]);
         }
 
-        /** @var Member $member */
+        /** @var Member|\BimTheBam\OAuth2Authenticator\Model\Extension\Member $member */
         if (!($member = Member::get()->find('Email', $email))) {
             $member = Member::create();
 
@@ -310,6 +310,8 @@ class OAuth2 extends Controller
         }
 
         if (!$state->test) {
+            $member->OAuth2Providers()->add($provider);
+
             Security::setCurrentUser($member);
 
             return $this->redirect(Director::absoluteBaseURL());
