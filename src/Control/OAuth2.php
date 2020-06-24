@@ -309,8 +309,10 @@ class OAuth2 extends Controller
             }
         }
 
-        Security::setCurrentUser($member);
+        if (!$state->test) {
+            Security::setCurrentUser($member);
 
-        return $this->redirect(Director::absoluteBaseURL());
+            return $this->redirect(Director::absoluteBaseURL());
+        }
     }
 }
