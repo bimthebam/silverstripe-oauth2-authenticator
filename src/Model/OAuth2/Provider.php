@@ -231,8 +231,6 @@ class Provider extends DataObject
             'TokenEndpoint',
             'UserInfoEndpoint',
             'UserInfoEmailPath',
-            'UserInfoFirstNamePath',
-            'UserInfoSurnamePath',
         ];
 
         foreach ($requiredFields as $field) {
@@ -260,7 +258,7 @@ class Provider extends DataObject
                 }
             }
 
-            foreach (['UserInfoEmailPath', 'UserInfoFirstNamePath', 'UserInfoSurnamePath'] as $field) {
+            foreach (['UserInfoEmailPath',] as $field) {
                 if (!preg_match('/^\$\./', $this->{$field})) {
                     $result->addFieldError(
                         $field,
