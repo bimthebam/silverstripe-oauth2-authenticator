@@ -1,0 +1,33 @@
+en:
+  BimTheBam\OAuth2Authenticator\Control\CMS\Admin:
+    MENUTITLE: OAuth2
+  BimTheBam\OAuth2Authenticator\Model\OAuth2\Provider:
+    ACTIVE: Active
+    AUTHORIZATION_ENDPOINT: 'Authorization endpoint'
+    AUTHORIZATION_ENDPOINT_PLACEHOLDER: 'https://example.com/oauth2/authorize'
+    CALLBACK_URL: 'Callback URL'
+    CLIENT_ID: 'Client ID'
+    CLIENT_SECRET: 'Client secret'
+    CLIENT_SECRET_DESCRIPTION: '<p class="alert alert-danger">The client secrect must be stored secretly. Please add it to your .env file:</p>'
+    CLIENT_SECRET_DESCRIPTION_DEFINED: '<p class="alert alert-success">Client secret is properly defined in your .env file.</p>'
+    ERROR_EMPTY_FIELD: 'This field is required'
+    ERROR_INVALID_URL: 'Invalid URL'
+    ERROR_PATH: 'Path must start with $. .'
+    NEW_MEMBERS_DEFAULT_GROUP: 'Add new members to'
+    PATH_DESCRIPTION_PLAIN: 'e.g. $.fieldName<br/> (see <a href="https://github.com/FlowCommunications/JSONPath#jsonpath-examples" target="_blank">https://github.com/FlowCommunications/JSONPath#jsonpath-examples</a> for examples)'
+    PLURALNAME: 'OAuth2 providers'
+    PLURALS:
+      one: 'An OAuth2 provider'
+      other: '{count} OAuth2 providers'
+    SCOPES: 'Scopes to request'
+    SINGULARNAME: 'OAuth2 provider'
+    TEST_LINK: 'Test OAuth flow'
+    TEST_LINK_DESCRIPTION: 'No data will be written.'
+    TITLE: Title
+    TOKEN_ENDPOINT: 'Token endpoint'
+    TOKEN_ENDPOINT_PLACEHOLDER: 'https://example.com/oauth2/access_token'
+    USER_INFO_EMAIL_PATH: 'User info - path to email'
+    USER_INFO_ENDPOINT: 'User info endpoint'
+    USER_INFO_ENDPOINT_PLACEHOLDER: 'https://example.com/api/me'
+    USER_INFO_FIRST_NAME_PATH: 'User info - path to first name'
+    USER_INFO_SURNAME_PATH: 'User info - path to surname'
