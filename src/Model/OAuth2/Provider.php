@@ -191,7 +191,8 @@ class Provider extends DataObject
 
                 $testLink = OAuth2::get_init_auth_flow_url($this, true);
 
-                $fields->push(
+                $fields->addFieldToTab(
+                    'Root.Main',
                     LiteralField::create(
                         'TestLinkButton',
                         '<p>' .
