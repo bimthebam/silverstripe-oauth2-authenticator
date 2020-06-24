@@ -36,6 +36,21 @@ use SilverStripe\Security\Group;
 class Provider extends DataObject
 {
     /**
+     * @var string
+     */
+    private static $table_name = 'OAuth2Provider';
+
+    /**
+     * @var string
+     */
+    private static $singular_name = 'OAuth2 provider';
+    #
+    /**
+     * @var string
+     */
+    private static $plural_name = 'OAuth2 providers';
+
+    /**
      * @var string[]
      */
     private static $db = [
