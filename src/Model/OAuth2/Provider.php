@@ -86,9 +86,16 @@ class Provider extends DataObject
                 );
             }
 
+            if ($userInfoEndpoint = $fields->dataFieldByName('UserInfoEndpoint')) {
+                $userInfoEndpoint->setAttribute(
+                    'placeholder',
+                    _t(__CLASS__ . '.USER_INFO_ENDPOINT_PLACEHOLDER', 'https://example.com/api/me')
+                );
+            }
+
             $pathDescriptionPlain = _t(
                 __CLASS__ . '.PATH_DESCRIPTION_PLAIN',
-                'e.g. $.variable' .
+                'e.g. $.fieldName' .
                 '<br/>' .
                 ' (see <a href="https://github.com/FlowCommunications/JSONPath#jsonpath-examples" target="_blank">' .
                 'https://github.com/FlowCommunications/JSONPath#jsonpath-examples</a> for examples)'
@@ -97,7 +104,7 @@ class Provider extends DataObject
             foreach (['UserInfoEmailPath', 'UserInfoFirstNamePath', 'UserInfoSurnamePath'] as $field) {
                 if (($field = $fields->dataFieldByName($field))) {
                     $field->setDescription($pathDescriptionPlain)
-                        ->setAttribute('placeholder', 'body.fieldName');
+                        ->setAttribute('placeholder', '$.fieldName');
                 }
             }
 
@@ -127,7 +134,7 @@ class Provider extends DataObject
                             'ClientSecretDescription',
                             _t(
                                 __CLASS__ . '.CLIENT_SECRET_DESCRIPTION',
-                                '<p class="alert alert-info">' .
+                                '<p class="alert alert-danger">' .
                                 'The client secrect must be stored secretly. ' .
                                 'Please add it to your .env file:' .
                                 '</p>'
@@ -150,7 +157,7 @@ class Provider extends DataObject
                             'ClientSecretDescriptionDefined',
                             _t(
                                 __CLASS__ . '.CLIENT_SECRET_DESCRIPTION_DEFINED',
-                                '<p class="alert alert-info">' .
+                                '<p class="alert alert-success">' .
                                 'Client secret is properly defined in your .env file.' .
                                 '</p>'
                             )
