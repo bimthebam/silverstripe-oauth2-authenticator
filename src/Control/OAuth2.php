@@ -226,6 +226,11 @@ class OAuth2 extends Controller
             $this->httpError(500, 'Invalid json response');
         }
 
+        if ($state->test) {
+            Debug::show('User info reponse');
+            Debug::show($body);
+        }
+
         $body = new JSONPath($body);
 
         if (
