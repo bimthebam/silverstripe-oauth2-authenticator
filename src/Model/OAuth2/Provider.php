@@ -12,6 +12,7 @@ use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\Forms\TextareaField;
 use SilverStripe\Forms\TreeDropdownField;
+use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBBoolean;
 use SilverStripe\ORM\FieldType\DBText;
@@ -19,6 +20,7 @@ use SilverStripe\ORM\FieldType\DBVarchar;
 use SilverStripe\ORM\ManyManyList;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;
+use SilverStripe\View\TemplateGlobalProvider;
 
 /**
  * Class Provider
@@ -39,7 +41,7 @@ use SilverStripe\Security\Member;
  * @property string ClientSecretEnvKey
  * @property string ClientSecret
  */
-class Provider extends DataObject
+class Provider extends DataObject implements TemplateGlobalProvider
 {
     /**
      * @var string
@@ -202,7 +204,7 @@ class Provider extends DataObject
                     )
                 );
 
-                $testLink = OAuth2::get_init_auth_flow_url($this, true);
+                $testLink = $this->getInitAuthFlowURL(true);
 
                 $fields->addFieldToTab(
                     'Root.Main',
@@ -337,5 +339,32 @@ class Provider extends DataObject
         }
 
         return (string)$secret;
+    }
+
+    /**
+     * @param bool $test
+     * @return bool|string
+     */
+    public function getInitAuthFlowURL(bool $test = false)
+    {
+        return OAuth2::get_init_auth_flow_url($this, $test);
+    }
+
+    /**
+     * @return DataList
+     */
+    public static function get_available_provider()
+    {
+        return static::get()->filter(['Active' => true]);
+    }
+
+    /**
+     * @return array|string[]
+     */
+    public static function get_template_global_variables()
+    {
+        return [
+            'OAuth2Provider' => 'get_available_provider'
+        ];
     }
 }
