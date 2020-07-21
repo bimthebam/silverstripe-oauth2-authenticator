@@ -3,6 +3,8 @@
 namespace BimTheBam\OAuth2Authenticator\Model\OAuth2;
 
 use BimTheBam\OAuth2Authenticator\Control\OAuth2;
+use SilverStripe\AssetAdmin\Forms\UploadField;
+use SilverStripe\Assets\Image;
 use SilverStripe\Core\Environment;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\GridField\GridField;
@@ -37,6 +39,8 @@ use SilverStripe\View\TemplateGlobalProvider;
  * @property string Scopes
  * @property int NewMembersDefaultGroupID
  * @method Group NewMembersDefaultGroup()
+ * @property int IconID
+ * @method Image Icon()
  * @method ManyManyList|Member[] Members()
  * @property string ClientSecretEnvKey
  * @property string ClientSecret
@@ -79,6 +83,7 @@ class Provider extends DataObject implements TemplateGlobalProvider
      */
     private static $has_one = [
         'NewMembersDefaultGroup' => Group::class,
+        'Icon' => Image::class,
     ];
 
     /**
@@ -94,6 +99,13 @@ class Provider extends DataObject implements TemplateGlobalProvider
     private static $summary_fields = [
         'Active.Nice',
         'Title',
+    ];
+
+    /**
+     * @var string[]
+     */
+    private static $owns = [
+        'Icon',
     ];
 
     /**
@@ -154,6 +166,10 @@ class Provider extends DataObject implements TemplateGlobalProvider
                         Group::get()
                     )
                 );
+            }
+
+            if (($icon = $fields->dataFieldByName('Icon')) && ($icon instanceof UploadField)) {
+                $icon->setFolderName('OAuth2/Provider');
             }
 
             if ($this->exists()) {
@@ -260,6 +276,7 @@ class Provider extends DataObject implements TemplateGlobalProvider
             __CLASS__ . '.NEW_MEMBERS_DEFAULT_GROUP',
             'Add new members to'
         );
+        $labels['IconID'] = $labels['Icon'] = _t(__CLASS__ . '.ICON', 'Icon');
         $labels['Members'] = Member::singleton()->i18n_plural_name();
         return $labels;
     }
