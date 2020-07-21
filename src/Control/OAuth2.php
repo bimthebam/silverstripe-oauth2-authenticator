@@ -9,7 +9,9 @@ use GuzzleHttp\Client;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\Debug;
+use SilverStripe\Security\IdentityStore;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\RandomGenerator;
 use SilverStripe\Security\Security;
@@ -119,7 +121,7 @@ class OAuth2 extends Controller
             'exp' => (time() + static::config()->get('state_ttl')),
             'test' => false,
         ];
-        
+
         if ((int)$request->requestVar('test') === 1) {
             $state['test'] = true;
         }
@@ -165,7 +167,7 @@ class OAuth2 extends Controller
         if (!($provider = Provider::get()->filter(['Active' => true])->byID($providerID))) {
             $this->httpError(404, 'Provider not found');
         }
-        
+
         $postData = [
             'code' => $code,
             'grant_type' => 'authorization_code',
@@ -239,7 +241,7 @@ class OAuth2 extends Controller
         ) {
             $this->httpError(500, 'Email not found at path: ' . $provider->UserInfoEmailPath);
         }
-        
+
         $firstName = null;
 
         if (!empty($provider->UserInfoFirstNamePath)) {
@@ -311,6 +313,10 @@ class OAuth2 extends Controller
 
         if (!$state->test) {
             $member->OAuth2Providers()->add($provider);
+
+            /** @var IdentityStore $identityStore */
+            $identityStore = Injector::inst()->get(IdentityStore::class);
+            $identityStore->logIn($member, false, $request);
 
             Security::setCurrentUser($member);
 
