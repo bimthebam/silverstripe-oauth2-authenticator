@@ -137,7 +137,8 @@ class OAuth2 extends Controller
 
     /**
      * @param HTTPRequest $request
-     * @throws \SilverStripe\Control\HTTPResponse_Exception
+     * @return \SilverStripe\Control\HTTPResponse|null
+     * @throws \SilverStripe\Control\HTTPResponse_Exception|\Flow\JSONPath\JSONPathException
      */
     public function callback(HTTPRequest $request)
     {
@@ -156,7 +157,7 @@ class OAuth2 extends Controller
         try {
             $state = JWT::decode(
                 $state,
-                $request->getSession()->get(__CLASS__ . '_' . $providerID . '_state_key'),
+                $request->getSession()->get(OAuth2::class . '_' . $providerID . '_state_key'),
                 ['HS256']
             );
         } catch (\Exception $e) {
@@ -195,18 +196,16 @@ class OAuth2 extends Controller
             $this->httpError(500, $e->getMessage());
         }
 
-        if (($body = \json_decode($response->getBody())) === null) {
+        if (($tokenBody = \json_decode($response->getBody())) === null) {
             $this->httpError(500, 'Invalid json response');
         }
 
-        if (!isset($body->access_token) || empty($accessToken = $body->access_token)) {
+        if (!isset($tokenBody->access_token) || empty($accessToken = $tokenBody->access_token)) {
             $this->httpError(400, 'No access token given');
         }
 
         if ($state->test) {
-            Debug::show([
-                'access_token' => $accessToken
-            ]);
+            Debug::show($tokenBody);
         }
 
         $userInfoResponse = null;
@@ -224,16 +223,16 @@ class OAuth2 extends Controller
             $this->httpError(500, $e->getMessage());
         }
 
-        if (($body = \json_decode($userInfoResponse->getBody())) === null) {
+        if (($userInfoBody = \json_decode($userInfoResponse->getBody())) === null) {
             $this->httpError(500, 'Invalid json response');
         }
 
         if ($state->test) {
             Debug::show('User info reponse');
-            Debug::show($body);
+            Debug::show($userInfoBody);
         }
 
-        $body = new JSONPath($body);
+        $body = new JSONPath($userInfoBody);
 
         if (
             !count($email = $body->find($provider->UserInfoEmailPath))
@@ -319,6 +318,8 @@ class OAuth2 extends Controller
             $identityStore->logIn($member, false, $request);
 
             Security::setCurrentUser($member);
+
+            $this->invokeWithExtensions('onAfterTokenAuthorization', $request, $provider, $state, $tokenBody, $userInfoBody);
 
             return $this->redirect(Director::absoluteBaseURL());
         }
