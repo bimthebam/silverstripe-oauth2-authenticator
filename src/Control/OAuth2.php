@@ -157,7 +157,7 @@ class OAuth2 extends Controller
         try {
             $state = JWT::decode(
                 $state,
-                $request->getSession()->get(OAuth2::class . '_' . $providerID . '_state_key'),
+                $request->getSession()->get(__CLASS__ . '_' . $providerID . '_state_key'),
                 ['HS256']
             );
         } catch (\Exception $e) {
