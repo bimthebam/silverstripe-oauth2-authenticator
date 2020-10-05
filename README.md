@@ -5,6 +5,6 @@
 - [x] Auth flow
 - [ ] LoginForm implementation
 - [ ] BackURL handling
-- [ ] Group mapping
+- [x] Group mapping
 - [ ] Documentation
 - [ ] Examples (e.g. Azure AD, Google)

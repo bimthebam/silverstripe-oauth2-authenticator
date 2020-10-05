@@ -1,6 +1,6 @@
 {
     "name": "bimthebam/silverstripe-oauth2-authenticator",
-    "description": "Configurable (multiple IPD) OAuth2 authenticator for SilverStripe",
+    "description": "Configurable (multiple IDP) OAuth2 authenticator for SilverStripe",
     "type": "silverstripe-vendormodule",
     "keywords": ["silverstripe", "module", "oauth2", "authenticator"],
     "license": "BSD-3-Clause",

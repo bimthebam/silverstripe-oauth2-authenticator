@@ -15,7 +15,7 @@ use SilverStripe\ORM\ManyManyList;
  * @package BimTheBam\OAuth2Authenticator\Model\Extension
  * @mixin \SilverStripe\Security\Member
  * @property \SilverStripe\Security\Member owner
- * @property ManyManyList|Provider[] OAuth2Providers
+ * @method ManyManyList|Provider[] OAuth2Providers()
  */
 class Member extends DataExtension
 {
@@ -35,8 +35,8 @@ class Member extends DataExtension
 
         if (
             ($oAuth2Providers = $fields->dataFieldByName('OAuth2Providers'))
-            && ($oAuth2Providers instanceof GridField))
-        {
+            && ($oAuth2Providers instanceof GridField)
+        ) {
             $config = GridFieldConfig_Base::create()
                 ->addComponent(new GridFieldDeleteAction(true));
 

@@ -1,6 +1,19 @@
 en:
   BimTheBam\OAuth2Authenticator\Control\CMS\Admin:
     MENUTITLE: OAuth2
+  BimTheBam\OAuth2Authenticator\Model\Extension\Group:
+    OAUTH2_PROVIDER_GROUP_MAPPINGS: 'OAuth2 provider group mappings'
+  BimTheBam\OAuth2Authenticator\Model\OAuth2\GroupMapping:
+    ERROR_EMPTY_FIELD: 'This field is required'
+    EXTERNAL_GROUP_IDS: 'External group identifiers (e.g. ids or unique strings)'
+    EXTERNAL_GROUP_IDS_DESCRIPTION: 'Provide as comma separated list.'
+    GROUPS: 'Map to internal groups'
+    INTERNAL_TITLE: 'Internal title'
+    PLURALNAME: 'Group mappings'
+    PLURALS:
+      one: 'A Group mapping'
+      other: '{count} Group mappings'
+    SINGULARNAME: 'Group mapping'
   BimTheBam\OAuth2Authenticator\Model\OAuth2\Provider:
     ACTIVE: Active
     AUTHORIZATION_ENDPOINT: 'Authorization endpoint'
@@ -13,6 +26,10 @@ en:
     ERROR_EMPTY_FIELD: 'This field is required'
     ERROR_INVALID_URL: 'Invalid URL'
     ERROR_PATH: 'Path must start with $. .'
+    GROUPS_INFO_ENDPOINT: 'Groups info endpoint'
+    GROUPS_INFO_ENDPOINT_PLACEHOLDER: 'https://example.com/api/me/groups'
+    GROUPS_INFO_IDENTIFIER_PATH: 'Groups info - path to unique group identifier (e.g. an id or unique string)'
+    ICON: Icon
     NEW_MEMBERS_DEFAULT_GROUP: 'Add new members to'
     PATH_DESCRIPTION_PLAIN: 'e.g. $.fieldName<br/> (see <a href="https://github.com/FlowCommunications/JSONPath#jsonpath-examples" target="_blank">https://github.com/FlowCommunications/JSONPath#jsonpath-examples</a> for examples)'
     PLURALNAME: 'OAuth2 providers'

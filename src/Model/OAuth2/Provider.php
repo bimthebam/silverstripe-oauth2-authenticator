@@ -19,6 +19,7 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBBoolean;
 use SilverStripe\ORM\FieldType\DBText;
 use SilverStripe\ORM\FieldType\DBVarchar;
+use SilverStripe\ORM\HasManyList;
 use SilverStripe\ORM\ManyManyList;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;
@@ -35,12 +36,15 @@ use SilverStripe\View\TemplateGlobalProvider;
  * @property string UserInfoEmailPath
  * @property string UserInfoFirstNamePath
  * @property string UserInfoSurnamePath
+ * @property string GroupsInfoEndpoint
+ * @property string GroupsInfoIdentifierPath
  * @property string ClientID
  * @property string Scopes
  * @property int NewMembersDefaultGroupID
  * @method Group NewMembersDefaultGroup()
  * @property int IconID
  * @method Image Icon()
+ * @method HasManyList|GroupMapping[] GroupMappings()
  * @method ManyManyList|Member[] Members()
  * @property string ClientSecretEnvKey
  * @property string ClientSecret
@@ -74,6 +78,8 @@ class Provider extends DataObject implements TemplateGlobalProvider
         'UserInfoEmailPath' => DBVarchar::class . '(255)',
         'UserInfoFirstNamePath' => DBVarchar::class . '(255)',
         'UserInfoSurnamePath' => DBVarchar::class . '(255)',
+        'GroupsInfoEndpoint' => DBVarchar::class . '(255)',
+        'GroupsInfoIdentifierPath' => DBVarchar::class . '(255)',
         'ClientID' => DBText::class,
         'Scopes' => DBVarchar::class . '(255)',
     ];
@@ -84,6 +90,13 @@ class Provider extends DataObject implements TemplateGlobalProvider
     private static $has_one = [
         'NewMembersDefaultGroup' => Group::class,
         'Icon' => Image::class,
+    ];
+
+    /**
+     * @var string[]
+     */
+    private static $has_many = [
+        'GroupMappings' => GroupMapping::class,
     ];
 
     /**
@@ -135,6 +148,13 @@ class Provider extends DataObject implements TemplateGlobalProvider
                 );
             }
 
+            if ($groupsInfoEndpoint = $fields->dataFieldByName('GroupsInfoEndpoint')) {
+                $groupsInfoEndpoint->setAttribute(
+                    'placeholder',
+                    _t(__CLASS__ . '.GROUPS_INFO_ENDPOINT_PLACEHOLDER', 'https://example.com/api/me/groups')
+                );
+            }
+
             $pathDescriptionPlain = _t(
                 __CLASS__ . '.PATH_DESCRIPTION_PLAIN',
                 'e.g. $.fieldName' .
@@ -143,7 +163,14 @@ class Provider extends DataObject implements TemplateGlobalProvider
                 'https://github.com/FlowCommunications/JSONPath#jsonpath-examples</a> for examples)'
             );
 
-            foreach (['UserInfoEmailPath', 'UserInfoFirstNamePath', 'UserInfoSurnamePath'] as $field) {
+            $fieldsToDescribe = [
+                'UserInfoEmailPath',
+                'UserInfoFirstNamePath',
+                'UserInfoSurnamePath',
+                'GroupsInfoIdentifierPath',
+            ];
+
+            foreach ($fieldsToDescribe as $field) {
                 if (($field = $fields->dataFieldByName($field))) {
                     $field->setDescription($pathDescriptionPlain)
                         ->setAttribute('placeholder', '$.fieldName');
@@ -268,6 +295,11 @@ class Provider extends DataObject implements TemplateGlobalProvider
             'User info - path to first name'
         );
         $labels['UserInfoSurnamePath'] = _t(__CLASS__ . '.USER_INFO_SURNAME_PATH', 'User info - path to surname');
+        $labels['GroupsInfoEndpoint'] = _t(__CLASS__ . '.GROUPS_INFO_ENDPOINT', 'Groups info endpoint');
+        $labels['GroupsInfoIdentifierPath'] = _t(
+            __CLASS__ . '.GROUPS_INFO_IDENTIFIER_PATH',
+            'Groups info - path to unique group identifier (e.g. an id or unique string)'
+        );
         $labels['ClientID'] = _t(__CLASS__ . '.CLIENT_ID', 'Client ID');
         $labels['ClientSecret'] = _t(__CLASS__ . '.CLIENT_SECRET', 'Client secret');
         $labels['CallbackURL'] = _t(__CLASS__ . '.CALLBACK_URL', 'Callback URL');
@@ -277,6 +309,7 @@ class Provider extends DataObject implements TemplateGlobalProvider
             'Add new members to'
         );
         $labels['IconID'] = $labels['Icon'] = _t(__CLASS__ . '.ICON', 'Icon');
+        $labels['GroupMappings'] = GroupMapping::singleton()->i18n_plural_name();
         $labels['Members'] = Member::singleton()->i18n_plural_name();
         return $labels;
     }

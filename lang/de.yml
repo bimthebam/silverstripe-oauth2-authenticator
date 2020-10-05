@@ -1,6 +1,19 @@
 de:
   BimTheBam\OAuth2Authenticator\Control\CMS\Admin:
     MENUTITLE: OAuth2
+  BimTheBam\OAuth2Authenticator\Model\Extension\Group:
+    OAUTH2_PROVIDER_GROUP_MAPPINGS: 'OAuth2 Provider Gruppen-Mappings'
+  BimTheBam\OAuth2Authenticator\Model\OAuth2\GroupMapping:
+    ERROR_EMPTY_FIELD: 'Dieses Feld wird benötigt'
+    EXTERNAL_GROUP_IDS: 'Externe Gruppen-Indikatoren (z.B. IDs oder eineindeutige Strings)'
+    EXTERNAL_GROUP_IDS_DESCRIPTION: 'Als kommaseparierte Liste angeben.'
+    GROUPS: 'Auf interne Gruppen mappen'
+    INTERNAL_TITLE: 'Interne Bezeichnung'
+    PLURALNAME: Gruppen-Mappings
+    PLURALS:
+      one: 'Ein Gruppe-Mapping'
+      other: '{count} Gruppen-Mappings'
+    SINGULARNAME: Gruppen-Mapping
   BimTheBam\OAuth2Authenticator\Model\OAuth2\Provider:
     ACTIVE: Aktiv
     AUTHORIZATION_ENDPOINT: 'Authorization Endpunkt'
@@ -13,6 +26,10 @@ de:
     ERROR_EMPTY_FIELD: 'Dieses Feld wird benötigt'
     ERROR_INVALID_URL: 'Ungültige URL'
     ERROR_PATH: 'Pfad muss mit $. starten.'
+    GROUPS_INFO_ENDPOINT: 'Gruppen-Info Endpunkt'
+    GROUPS_INFO_ENDPOINT_PLACEHOLDER: 'https://example.com/api/me/groups'
+    GROUPS_INFO_IDENTIFIER_PATH: 'Gruppen-Info - Pfad zum eindeutigen Gruppen-Indikator (z.B. eine ID oder ein eineindeutiger String)'
+    ICON: Icon
     NEW_MEMBERS_DEFAULT_GROUP: 'Neue Benutzer hinzufügen zu'
     PATH_DESCRIPTION_PLAIN: 'z.B. $.fieldName<br/> (siehe <a href="https://github.com/FlowCommunications/JSONPath#jsonpath-examples" target="_blank">https://github.com/FlowCommunications/JSONPath#jsonpath-examples</a> für Beispiele)'
     PLURALNAME: OAuth2-Provider

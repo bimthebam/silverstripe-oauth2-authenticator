@@ -2,6 +2,7 @@
 
 namespace BimTheBam\OAuth2Authenticator\Control;
 
+use BimTheBam\OAuth2Authenticator\Model\OAuth2\GroupMapping;
 use BimTheBam\OAuth2Authenticator\Model\OAuth2\Provider;
 use Firebase\JWT\JWT;
 use Flow\JSONPath\JSONPath;
@@ -11,6 +12,7 @@ use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\Debug;
+use SilverStripe\ORM\ArrayList;
 use SilverStripe\Security\IdentityStore;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\RandomGenerator;
@@ -292,17 +294,71 @@ class OAuth2 extends Controller
                     $this->httpError(500, $e->getMessage());
                 }
             }
+        }
 
-            if (
-                ($defaultGroup = $provider->NewMembersDefaultGroup())
-                && $defaultGroup->exists()
-                && !$member->inGroup($defaultGroup, true)
-            ) {
+        $addToGroups = [];
+
+        if (
+            ($defaultGroup = $provider->NewMembersDefaultGroup())
+            && $defaultGroup->exists()
+            && !$member->inGroup($defaultGroup, true)
+        ) {
+            $addToGroups[$defaultGroup->ID] = $defaultGroup;
+        }
+
+        if (
+            !empty($groupsInfoEndpoint = $provider->GroupsInfoEndpoint)
+            && !empty($groupsInfoIdentifierPath = $provider->GroupsInfoIdentifierPath)
+        ) {
+            $groupsInfoResponse = null;
+
+            try {
+                $groupsInfoResponse = $client->get(
+                    $groupsInfoEndpoint,
+                    [
+                        'headers' => [
+                            'Authorization' => 'Bearer ' . $accessToken,
+                        ]
+                    ]
+                );
+            } catch (\Exception $e) {
+                $this->httpError(500, $e->getMessage());
+            }
+
+            if (($groupsInfoBody = \json_decode($groupsInfoResponse->getBody())) === null) {
+                $this->httpError(500, 'Invalid json response');
+            }
+
+            if ($state->test) {
+                Debug::show('Group(s) info reponse');
+                Debug::show($groupsInfoBody);
+            }
+
+            $groupsInfoBody = new JSONPath($groupsInfoBody);
+
+            if (count($ids = $groupsInfoBody->find($groupsInfoIdentifierPath))) {
+                foreach ($ids as $id) {
+                    if (($groupMappings = GroupMapping::get()->where(["FIND_IN_SET(?, ExternalGroupIDs)" => $id]))) {
+                        /** @var GroupMapping $groupMapping */
+                        foreach ($groupMappings as $groupMapping) {
+                            foreach ($groupMapping->Groups() as $group) {
+                                if (!$group->DirectMembers()->byID($member->ID)) {
+                                    $addToGroups[$group->ID] = $group;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (count($addToGroups)) {
+            foreach ($addToGroups as $group) {
                 if ($state->test) {
-                    Debug::show('Adding member to group "' . $defaultGroup->Title . '"');
+                    Debug::show('Adding member to group "' . $group->Title . '"');
                 } else {
                     try {
-                        $defaultGroup->Members()->add($member);
+                        $group->Members()->add($member);
                     } catch (\Exception $e) {
                         $this->httpError(500, $e->getMessage());
                     }

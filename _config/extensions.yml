@@ -5,3 +5,7 @@ Name: silverstripe_oauth2_authenticator_extensions
 SilverStripe\Security\Member:
   extensions:
     - BimTheBam\OAuth2Authenticator\Model\Extension\Member
+
+SilverStripe\Security\Group:
+  extensions:
+    - BimTheBam\OAuth2Authenticator\Model\Extension\Group
