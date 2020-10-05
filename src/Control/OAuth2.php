@@ -319,7 +319,14 @@ class OAuth2 extends Controller
 
             Security::setCurrentUser($member);
 
-            $this->invokeWithExtensions('onAfterTokenAuthorization', $request, $provider, $state, $tokenBody, $userInfoBody);
+            $this->invokeWithExtensions(
+                'onAfterTokenAuthorization',
+                $request,
+                $provider,
+                $state,
+                $tokenBody,
+                $userInfoBody
+            );
 
             return $this->redirect(Director::absoluteBaseURL());
         }
