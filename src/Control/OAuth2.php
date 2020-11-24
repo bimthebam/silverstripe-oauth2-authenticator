@@ -132,7 +132,13 @@ class OAuth2 extends Controller
 
         $query['state'] = $state;
 
-        $url = $provider->AuthorizationEndpoint . '?' . http_build_query($query);
+        $url = $provider->AuthorizationEndpoint;
+
+        if (strstr($url, '?')) {
+            $url = Controller::join_links($url . '&' . http_build_query($query));
+        } else {
+            $url = Controller::join_links($url . '?' . http_build_query($query));
+        }
 
         return $this->redirect($url);
     }
