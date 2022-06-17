@@ -340,8 +340,6 @@ class Provider extends DataObject implements TemplateGlobalProvider
 
         if ($result->isValid()) {
             $filterOptions = [
-                FILTER_FLAG_SCHEME_REQUIRED,
-                FILTER_FLAG_HOST_REQUIRED,
                 FILTER_FLAG_PATH_REQUIRED,
             ];
 
