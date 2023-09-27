@@ -3,6 +3,8 @@ en:
     MENUTITLE: OAuth2
   BimTheBam\OAuth2Authenticator\Model\Extension\Group:
     OAUTH2_PROVIDER_GROUP_MAPPINGS: 'OAuth2 provider group mappings'
+  BimTheBam\OAuth2Authenticator\Model\Extension\Member:
+    CAN_LOGIN_ERROR_OAUTH_LOGIN_ENABLED: 'Login not possible. Please use your appropriated OAuth provider for login.'
   BimTheBam\OAuth2Authenticator\Model\OAuth2\GroupMapping:
     ERROR_EMPTY_FIELD: 'This field is required'
     EXTERNAL_GROUP_IDS: 'External group identifiers (e.g. ids or unique strings)'
@@ -21,9 +23,10 @@ en:
     CALLBACK_URL: 'Callback URL'
     CLIENT_ID: 'Client ID'
     CLIENT_SECRET: 'Client secret'
-    CLIENT_SECRET_DESCRIPTION: '<p class="alert alert-danger">The client secrect must be stored secretly. Please add it to your .env file:</p>'
+    CLIENT_SECRET_DESCRIPTION: '<p class="alert alert-danger">The client secret must be stored secretly. Please add it to your .env file:</p>'
     CLIENT_SECRET_DESCRIPTION_DEFINED: '<p class="alert alert-success">Client secret is properly defined in your .env file.</p>'
     ERROR_EMPTY_FIELD: 'This field is required'
+    ERROR_EMPTY_FIELD_ENDPOINTS: 'This field is required, if no OpenID connect discovery endpoint is defined.'
     ERROR_INVALID_URL: 'Invalid URL'
     ERROR_PATH: 'Path must start with $. .'
     GROUPS_INFO_ENDPOINT: 'Groups info endpoint'
@@ -31,6 +34,8 @@ en:
     GROUPS_INFO_IDENTIFIER_PATH: 'Groups info - path to unique group identifier (e.g. an id or unique string)'
     ICON: Icon
     NEW_MEMBERS_DEFAULT_GROUP: 'Add new members to'
+    OPEN_ID_DISCOVERY_ENDPOINT: 'OpenID connect discovery endpoint'
+    OPEN_ID_DISCOVERY_ENDPOINT_PLACEHOLDER: 'https://example.com/.well-known/openid-configuration'
     PATH_DESCRIPTION_PLAIN: 'e.g. $.fieldName<br/> (see <a href="https://github.com/FlowCommunications/JSONPath#jsonpath-examples" target="_blank">https://github.com/FlowCommunications/JSONPath#jsonpath-examples</a> for examples)'
     PLURALNAME: 'OAuth2 providers'
     PLURALS:
@@ -48,3 +53,5 @@ en:
     USER_INFO_ENDPOINT_PLACEHOLDER: 'https://example.com/api/me'
     USER_INFO_FIRST_NAME_PATH: 'User info - path to first name'
     USER_INFO_SURNAME_PATH: 'User info - path to surname'
+  BimTheBam\OAuth2Authenticator\Security\MemberAuthenticator\LoginForm:
+    LOGIN_WITH: 'Login with'

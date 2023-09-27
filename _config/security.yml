@@ -1,0 +1,15 @@
+---
+Name: bimthebam-silverstripe-oauth2-authenticator-security
+After:
+  - '#coresecurity'
+---
+
+SilverStripe\Core\Injector\Injector:
+  SilverStripe\Security\Security:
+    properties:
+      Authenticators:
+        BimTheBamOAuth2Authenticator: '%$BimTheBam\OAuth2Authenticator\Security\MemberAuthenticator'
+
+SilverStripe\Security\MemberAuthenticator\LostPasswordHandler:
+  extensions:
+    - BimTheBam\OAuth2Authenticator\Security\MemberAuthenticator\Extension\LostPasswordHandler

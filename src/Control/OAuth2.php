@@ -5,18 +5,25 @@ namespace BimTheBam\OAuth2Authenticator\Control;
 use BimTheBam\OAuth2Authenticator\Model\OAuth2\GroupMapping;
 use BimTheBam\OAuth2Authenticator\Model\OAuth2\Provider;
 use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use Flow\JSONPath\JSONPath;
+use Flow\JSONPath\JSONPathException;
 use GuzzleHttp\Client;
+use Psr\Container\NotFoundExceptionInterface;
+use Psr\SimpleCache\CacheInterface;
+use Psr\SimpleCache\InvalidArgumentException;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
+use SilverStripe\Control\HTTPResponse;
+use SilverStripe\Control\HTTPResponse_Exception;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\Debug;
-use SilverStripe\ORM\ArrayList;
 use SilverStripe\Security\IdentityStore;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\RandomGenerator;
 use SilverStripe\Security\Security;
+use stdClass;
 
 /**
  * Class OAuth2
@@ -27,69 +34,160 @@ class OAuth2 extends Controller
     /**
      * @var string
      */
-    private static $url_segment = 'oauth2';
+    private static string $url_segment = 'oauth2';
 
     /**
      * @var int
      */
-    private static $state_ttl = 120;
+    private static int $state_ttl = 120;
 
     /**
      * @var string[]
      */
-    private static $allowed_actions = [
+    private static array $allowed_actions = [
         'initAuthFlow',
         'callback',
     ];
 
     /**
      * @param Provider $provider
-     * @return bool|string
+     * @return string
      */
-    public static function get_callback_url_for_provider(Provider $provider)
+    public static function get_callback_url_for_provider(Provider $provider): string
     {
-        return Director::absoluteURL(
+        $url = Director::absoluteURL(
             Controller::join_links(
                 static::singleton()->Link('callback'),
                 $provider->ID
             )
         );
+
+        return $url !== false ? $url : '';
     }
 
     /**
      * @param Provider $provider
      * @param bool $test
-     * @return bool|string
+     * @return string
      */
-    public static function get_init_auth_flow_url(Provider $provider, bool $test = false)
+    public static function get_init_auth_flow_url(Provider $provider, bool $test = false): string
     {
         $link = Controller::join_links(
             static::singleton()->link('initAuthFlow'),
             $provider->ID
         );
 
-        if ($test) {
-            $link = Controller::join_links($link, '?test=1');
+        $query = [];
+
+        if (
+            Controller::has_curr() &&
+            ($request = Controller::curr()->getRequest())
+            && !empty($backURL = trim($request->requestVar('BackURL') ?? ''))
+            && Director::is_site_url($backURL)
+        ) {
+            $query['BackURL'] = Director::absoluteURL($backURL);
         }
 
-        return Director::absoluteURL($link);
+        if ($test) {
+            $query['test'] = '1';
+        }
+
+        if (!empty($query)) {
+            $link = Controller::join_links(
+                $link,
+                '?' . http_build_query($query)
+            );
+        }
+
+        return ($url = Director::absoluteURL($link)) !== false ? $url : '';
     }
 
     /**
      * @param HTTPRequest $request
-     * @return \SilverStripe\Control\HTTPResponse|null
+     * @return HTTPResponse
      */
-    public function index(HTTPRequest $request)
+    public function index(HTTPRequest $request): HTTPResponse
     {
         return $this->redirect(Director::absoluteBaseURL());
     }
 
     /**
-     * @param HTTPRequest $request
-     * @return \SilverStripe\Control\HTTPResponse|null
-     * @throws \SilverStripe\Control\HTTPResponse_Exception
+     * @var CacheInterface|null
      */
-    public function initAuthFlow(HTTPRequest $request)
+    protected ?CacheInterface $openIDDiscoveryCache = null;
+
+    /**
+     * @return CacheInterface
+     */
+    protected function getOpenIDDiscoveryCache(): CacheInterface
+    {
+        if ($this->openIDDiscoveryCache !== null) {
+            return $this->openIDDiscoveryCache;
+        }
+
+        return $this->openIDDiscoveryCache = Injector::inst()->create(
+            CacheInterface::class .
+            '.' .
+            str_replace('\\', '_', __CLASS__) . '_openid_discovery'
+        );
+    }
+
+    /**
+     * @param Provider $provider
+     * @return stdClass|null
+     * @throws InvalidArgumentException
+     * @throws HTTPResponse_Exception
+     */
+    protected function getOpenIDConnectConfiguration(Provider $provider): ?stdClass
+    {
+        if (empty($discoveryURL = $provider->OpenIDDiscoveryEndpoint)) {
+            return null;
+        }
+
+        if (($body = $this->getOpenIDDiscoveryCache()->get('provider-' . $provider->ID)) !== null) {
+            return $body;
+        } else {
+            try {
+                $client = new Client();
+                $response = $client->get($discoveryURL);
+
+                if (($body = json_decode($response->getBody())) === null) {
+                    $this->httpError(500, 'Empty or invalid response from OpenID connect.');
+                }
+
+                $requiredProperties = [
+                    'authorization_endpoint',
+                    'token_endpoint',
+                    'userinfo_endpoint',
+                ];
+
+                foreach ($requiredProperties as $property) {
+                    if (($body->{$property} ?? null) === null) {
+                        $this->httpError(
+                            500,
+                            'Invalid OpenID connect configuration. Missing "' . $property . '"'
+                        );
+                    }
+                }
+
+                $this->getOpenIDDiscoveryCache()->set('provider-' . $provider->ID, $body);
+
+                return $body;
+            } catch (\Throwable $e) {
+                $this->httpError(500, $e->getMessage());
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param HTTPRequest $request
+     * @return HTTPResponse
+     * @throws HTTPResponse_Exception
+     * @throws InvalidArgumentException
+     */
+    public function initAuthFlow(HTTPRequest $request): HTTPResponse
     {
         /** @var Provider $provider */
         if (empty($providerID = $request->param('ID'))) {
@@ -128,11 +226,19 @@ class OAuth2 extends Controller
             $state['test'] = true;
         }
 
+        if (!empty($backURL = trim($request->requestVar('BackURL') ?? ''))) {
+            $state['back_url'] = $backURL;
+        }
+
         $state = JWT::encode($state, $stateKey, 'HS256');
 
         $query['state'] = $state;
 
-        $url = $provider->AuthorizationEndpoint;
+        if (($config = $this->getOpenIDConnectConfiguration($provider)) !== null) {
+            $url = $config->authorization_endpoint;
+        } else {
+            $url = $provider->AuthorizationEndpoint;
+        }
 
         if (strstr($url, '?')) {
             $url = Controller::join_links($url . '&' . http_build_query($query));
@@ -145,10 +251,13 @@ class OAuth2 extends Controller
 
     /**
      * @param HTTPRequest $request
-     * @return \SilverStripe\Control\HTTPResponse|null
-     * @throws \SilverStripe\Control\HTTPResponse_Exception|\Flow\JSONPath\JSONPathException
+     * @return HTTPResponse|null
+     * @throws HTTPResponse_Exception
+     * @throws InvalidArgumentException
+     * @throws JSONPathException
+     * @throws NotFoundExceptionInterface
      */
-    public function callback(HTTPRequest $request)
+    public function callback(HTTPRequest $request): ?HTTPResponse
     {
         if (empty($providerID = $request->param('ID'))) {
             $this->httpError(400, 'No provider id given');
@@ -165,10 +274,12 @@ class OAuth2 extends Controller
         try {
             $state = JWT::decode(
                 $state,
-                $request->getSession()->get(__CLASS__ . '_' . $providerID . '_state_key'),
-                ['HS256']
+                new Key(
+                    $request->getSession()->get(__CLASS__ . '_' . $providerID . '_state_key'),
+                    'HS256'
+                )
             );
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->httpError(400, $e->getMessage());
         }
 
@@ -189,18 +300,24 @@ class OAuth2 extends Controller
             $postData['scope'] = $provider->Scopes;
         }
 
+        if (($config = $this->getOpenIDConnectConfiguration($provider)) !== null) {
+            $url = $config->token_endpoint;
+        } else {
+            $url = $provider->TokenEndpoint;
+        }
+
         $client = new Client();
 
         $response = null;
 
         try {
             $response = $client->post(
-                $provider->TokenEndpoint,
+                $url,
                 [
                     'form_params' => $postData,
                 ]
             );
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->httpError(500, $e->getMessage());
         }
 
@@ -216,18 +333,24 @@ class OAuth2 extends Controller
             Debug::show($tokenBody);
         }
 
+        if (($config = $this->getOpenIDConnectConfiguration($provider)) !== null) {
+            $url = $config->userinfo_endpoint;
+        } else {
+            $url = $provider->UserInfoEndpoint;
+        }
+
         $userInfoResponse = null;
 
         try {
             $userInfoResponse = $client->get(
-                $provider->UserInfoEndpoint,
+                $url,
                 [
                     'headers' => [
                         'Authorization' => 'Bearer ' . $accessToken,
                     ]
                 ]
             );
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->httpError(500, $e->getMessage());
         }
 
@@ -256,7 +379,10 @@ class OAuth2 extends Controller
                 !count($firstName = $body->find($provider->UserInfoFirstNamePath))
                 || ($firstName = $firstName->first()) === null
             ) {
-                $this->httpError(500, 'First name not found at path: ' . $provider->UserInfoFirstNamePath);
+                $this->httpError(
+                    500,
+                    'First name not found at path: ' . $provider->UserInfoFirstNamePath
+                );
             }
         }
 
@@ -267,7 +393,10 @@ class OAuth2 extends Controller
                 !count($surname = $body->find($provider->UserInfoSurnamePath))
                 || ($surname = $surname->first()) === null
             ) {
-                $this->httpError(500, 'Surname not found at path: ' . $provider->UserInfoSurnamePath);
+                $this->httpError(
+                    500,
+                    'Surname not found at path: ' . $provider->UserInfoSurnamePath
+                );
             }
         }
 
@@ -296,7 +425,7 @@ class OAuth2 extends Controller
 
                 try {
                     $member->write();
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                     $this->httpError(500, $e->getMessage());
                 }
             }
@@ -327,7 +456,7 @@ class OAuth2 extends Controller
                         ]
                     ]
                 );
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 $this->httpError(500, $e->getMessage());
             }
 
@@ -344,13 +473,13 @@ class OAuth2 extends Controller
 
             if (count($ids = $groupsInfoBody->find($groupsInfoIdentifierPath))) {
                 foreach ($ids as $id) {
-                    if (($groupMappings = GroupMapping::get()->where(["FIND_IN_SET(?, ExternalGroupIDs)" => $id]))) {
-                        /** @var GroupMapping $groupMapping */
-                        foreach ($groupMappings as $groupMapping) {
-                            foreach ($groupMapping->Groups() as $group) {
-                                if (!$group->DirectMembers()->byID($member->ID)) {
-                                    $addToGroups[$group->ID] = $group;
-                                }
+                    $groupMappings = GroupMapping::get()->where(["FIND_IN_SET(?, ExternalGroupIDs)" => $id]);
+
+                    /** @var GroupMapping $groupMapping */
+                    foreach ($groupMappings as $groupMapping) {
+                        foreach ($groupMapping->Groups() as $group) {
+                            if (!$group->DirectMembers()->byID($member->ID)) {
+                                $addToGroups[$group->ID] = $group;
                             }
                         }
                     }
@@ -365,7 +494,7 @@ class OAuth2 extends Controller
                 } else {
                     try {
                         $group->Members()->add($member);
-                    } catch (\Exception $e) {
+                    } catch (\Throwable $e) {
                         $this->httpError(500, $e->getMessage());
                     }
                 }
@@ -390,7 +519,13 @@ class OAuth2 extends Controller
                 $userInfoBody
             );
 
-            return $this->redirect(Director::absoluteBaseURL());
+            $backURL = !empty($backURL = trim($state->back_url ?? ''))
+                ? $backURL
+                : Director::absoluteBaseURL();
+
+            return $this->redirect($backURL);
         }
+
+        return null;
     }
 }

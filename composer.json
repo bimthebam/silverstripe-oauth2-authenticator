@@ -11,12 +11,13 @@
         }
     ],
     "require": {
+        "php": ">= 8.1",
         "composer/installers": "*",
-        "silverstripe/framework": "~4.0",
-        "silverstripe/siteconfig": "~4.0",
+        "silverstripe/framework": "^5.0",
+        "silverstripe/siteconfig": "^5.0",
         "guzzlehttp/guzzle": "^6 || ^7",
-        "firebase/php-jwt": "~5.2.0",
-        "flow/jsonpath": "~0.5.0"
+        "firebase/php-jwt": "^6.0",
+        "softcreatr/jsonpath": "^0.8"
     },
     "autoload": {
         "psr-4": {

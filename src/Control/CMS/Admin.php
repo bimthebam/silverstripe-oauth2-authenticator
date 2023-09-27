@@ -9,27 +9,26 @@ use SilverStripe\Admin\ModelAdmin;
  * Class Admin
  * @package BimTheBam\OAuth2Authenticator\Control\CMS
  */
-class Admin extends ModelAdmin
-{
+class Admin extends ModelAdmin {
     /**
      * @var string
      */
-    private static $url_segment = 'oauth2';
+    private static string $url_segment = 'oauth2';
 
     /**
      * @var string
      */
-    private static $menu_title = 'OAuth2';
+    private static string $menu_title = 'OAuth2';
 
     /**
      * @var string
      */
-    private static $menu_icon_class = 'font-icon-external-link';
+    private static string $menu_icon_class = 'font-icon-external-link';
 
     /**
      * @var string[]
      */
-    private static $managed_models = [
+    private static array $managed_models = [
         Provider::class,
     ];
 

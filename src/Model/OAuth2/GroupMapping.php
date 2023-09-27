@@ -2,7 +2,6 @@
 
 namespace BimTheBam\OAuth2Authenticator\Model\OAuth2;
 
-use SilverStripe\Control\Controller;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\ListboxField;
 use SilverStripe\Forms\TextareaField;
@@ -28,22 +27,22 @@ class GroupMapping extends DataObject
     /**
      * @var string
      */
-    private static $table_name = 'OAuth2GroupMapping';
+    private static string $table_name = 'OAuth2GroupMapping';
 
     /**
      * @var string
      */
-    private static $singular_name = 'Group mapping';
+    private static string $singular_name = 'Group mapping';
 
     /**
      * @var string
      */
-    private static $plural_name = 'Group mappings';
+    private static string $plural_name = 'Group mappings';
 
     /**
      * @var string[]
      */
-    private static $db = [
+    private static array $db = [
         'InternalTitle' => DBVarchar::class,
         'ExternalGroupIDs' => DBText::class,
     ];
@@ -51,21 +50,21 @@ class GroupMapping extends DataObject
     /**
      * @var string[]
      */
-    private static $has_one = [
+    private static array $has_one = [
         'Provider' => Provider::class,
     ];
 
     /**
      * @var string[]
      */
-    private static $many_many = [
+    private static array $many_many = [
         'Groups' => Group::class,
     ];
 
     /**
      * @var string[]
      */
-    private static $summary_fields = [
+    private static array $summary_fields = [
         'InternalTitle',
         'GroupTitles',
     ];
@@ -73,7 +72,7 @@ class GroupMapping extends DataObject
     /**
      * @return FieldList
      */
-    public function getCMSFields()
+    public function getCMSFields(): FieldList
     {
         $this->beforeUpdateCMSFields(function (FieldList $fields) {
             $fields->removeByName([
@@ -94,7 +93,9 @@ class GroupMapping extends DataObject
                 );
             }
 
-            $fields->push(ListboxField::create('Groups', $this->fieldLabel('Groups'), $this->availableGroups()));
+            $fields->push(
+                ListboxField::create('Groups', $this->fieldLabel('Groups'), $this->availableGroups())
+            );
         });
 
         return parent::getCMSFields();
@@ -104,7 +105,7 @@ class GroupMapping extends DataObject
      * @param bool $includerelations
      * @return array
      */
-    public function fieldLabels($includerelations = true)
+    public function fieldLabels($includerelations = true): array
     {
         $labels = parent::fieldLabels($includerelations);
         $labels['InternalTitle'] = _t(__CLASS__ . '.INTERNAL_TITLE', 'Internal title');
@@ -121,7 +122,7 @@ class GroupMapping extends DataObject
     /**
      * @return ValidationResult
      */
-    public function validate()
+    public function validate(): ValidationResult
     {
         $result = parent::validate();
 
@@ -143,7 +144,10 @@ class GroupMapping extends DataObject
      */
     public function getGroupTitles(): string
     {
-        return implode(', ', array_values($this->Groups()->map('ID', 'Title')->toArray()));
+        return implode(
+            ', ',
+            array_values($this->Groups()->map('ID', 'Title')->toArray())
+        );
     }
 
     /**
@@ -158,7 +162,8 @@ class GroupMapping extends DataObject
         /** @var Group $group */
         foreach (Group::get()->filter(['ParentID' => $parentID]) as $group) {
             $groups[$group->ID] = trim($path . $group->Title);
-            foreach ($this->availableGroups($group->ID, $path . $group->Title . ' > ') as $childID => $childTitle) {
+            $childGroups = $this->availableGroups($group->ID, $path . $group->Title . ' > ');
+            foreach ($childGroups as $childID => $childTitle) {
                 $groups[$childID] = $childTitle;
             }
         }

@@ -1,0 +1,9 @@
+---
+Name: bimthebam-silverstripe-oauth2-authenticator-cache
+---
+
+SilverStripe\Core\Injector\Injector:
+  Psr\SimpleCache\CacheInterface.BimTheBam_OAuth2Authenticator_Control_OAuth2_openid_discovery:
+    factory: SilverStripe\Core\Cache\CacheFactory
+    constructor:
+      namespace: BimTheBam_OAuth2Authenticator_Control_OAuth2_openid_discovery

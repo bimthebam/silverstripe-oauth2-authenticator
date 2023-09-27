@@ -1,5 +1,5 @@
 ---
-Name: silverstripe_oauth2_authenticator_routes
+Name: bimthebam-silverstripe-oauth2-authenticator-routes
 ---
 
 SilverStripe\Control\Director:
