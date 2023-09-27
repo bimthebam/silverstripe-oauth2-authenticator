@@ -1,10 +1,10 @@
-# OAuth2 authenticator for SilverStripe 4.x
+# OAuth2 authenticator for SilverStripe 5.x
 
 ## ToDo
 
 - [x] Auth flow
-- [ ] LoginForm implementation
-- [ ] BackURL handling
+- [x] LoginForm implementation
+- [x] BackURL handling
 - [x] Group mapping
 - [ ] Documentation
 - [ ] Examples (e.g. Azure AD, Google)
